@@ -1,0 +1,465 @@
+diff -ruN NPB3.3.1/NPB3.3-SER/BT/bt.f NPB3.3.1-gem5/NPB3.3-SER/BT/bt.f
+--- NPB3.3.1/NPB3.3-SER/BT/bt.f	2010-04-08 14:08:25.000000000 -0500
++++ NPB3.3.1-gem5/NPB3.3-SER/BT/bt.f	2018-03-08 14:08:50.229026411 -0600
+@@ -142,6 +142,12 @@
+        end do
+        call timer_start(1)
+ 
++c---------------------------------------------------------------------
++c      take checkpoint and reset stats here
++c---------------------------------------------------------------------
++       CALL execute_command_line('m5 checkpoint')
++       CALL execute_command_line('m5 resetstats')
++
+        do  step = 1, niter
+ 
+           if (mod(step, 20) .eq. 0 .or. 
+@@ -154,6 +160,11 @@
+ 
+        end do
+ 
++c---------------------------------------------------------------------
++c      dump stats here
++c---------------------------------------------------------------------
++       CALL execute_command_line('m5 dumpstats')
++
+        call timer_stop(1)
+        tmax = timer_read(1)
+        
+diff -ruN NPB3.3.1/NPB3.3-SER/CG/cg.f NPB3.3.1-gem5/NPB3.3-SER/CG/cg.f
+--- NPB3.3.1/NPB3.3-SER/CG/cg.f	2010-04-08 14:21:45.000000000 -0500
++++ NPB3.3.1-gem5/NPB3.3-SER/CG/cg.f	2018-03-08 14:17:23.035196413 -0600
+@@ -292,6 +292,12 @@
+       call timer_start( T_bench )
+ 
+ c---------------------------------------------------------------------
++c      take checkpoint and reset stats here
++c---------------------------------------------------------------------
++      CALL execute_command_line('m5 checkpoint')
++      CALL execute_command_line('m5 resetstats')
++
++c---------------------------------------------------------------------
+ c---->
+ c  Main Iteration for inverse power method
+ c---->
+@@ -348,6 +354,11 @@
+ 
+       enddo                              ! end of main iter inv pow meth
+ 
++c---------------------------------------------------------------------
++c      dump stats here
++c---------------------------------------------------------------------
++      CALL execute_command_line('m5 dumpstats')
++
+       call timer_stop( T_bench )
+ 
+ c---------------------------------------------------------------------
+diff -ruN NPB3.3.1/NPB3.3-SER/config/make.def NPB3.3.1-gem5/NPB3.3-SER/config/make.def
+--- NPB3.3.1/NPB3.3-SER/config/make.def	1969-12-31 18:00:00.000000000 -0600
++++ NPB3.3.1-gem5/NPB3.3-SER/config/make.def	2018-03-07 14:28:49.147868205 -0600
+@@ -0,0 +1,167 @@
++#---------------------------------------------------------------------------
++#
++#                SITE- AND/OR PLATFORM-SPECIFIC DEFINITIONS. 
++#
++#---------------------------------------------------------------------------
++
++#---------------------------------------------------------------------------
++# Items in this file will need to be changed for each platform.
++#---------------------------------------------------------------------------
++
++#---------------------------------------------------------------------------
++# Parallel Fortran:
++#
++# For CG, EP, FT, MG, LU, SP, BT and UA, which are in Fortran, the following 
++# must be defined:
++#
++# F77        - Fortran compiler
++# FFLAGS     - Fortran compilation arguments
++# F_INC      - any -I arguments required for compiling Fortran 
++# FLINK      - Fortran linker
++# FLINKFLAGS - Fortran linker arguments
++# F_LIB      - any -L and -l arguments required for linking Fortran 
++# 
++# compilations are done with $(F77) $(F_INC) $(FFLAGS) or
++#                            $(F77) $(FFLAGS)
++# linking is done with       $(FLINK) $(F_LIB) $(FLINKFLAGS)
++#---------------------------------------------------------------------------
++
++#---------------------------------------------------------------------------
++# This is the fortran compiler used for Fortran programs
++#---------------------------------------------------------------------------
++F77 = gfortran
++
++#---------------------------------------------------------------------------
++# This links fortran programs; usually the same as ${F77}
++#---------------------------------------------------------------------------
++FLINK	= $(F77)
++
++#---------------------------------------------------------------------------
++# These macros are passed to the linker 
++#---------------------------------------------------------------------------
++F_LIB  =
++
++#---------------------------------------------------------------------------
++# These macros are passed to the compiler 
++#---------------------------------------------------------------------------
++F_INC =
++
++#---------------------------------------------------------------------------
++# Global *compile time* flags for Fortran programs
++#---------------------------------------------------------------------------
++FFLAGS	= -O3 -mcmodel=medium
++
++#---------------------------------------------------------------------------
++# Global *link time* flags. Flags for increasing maximum executable 
++# size usually go here. 
++#---------------------------------------------------------------------------
++FLINKFLAGS = -O3 -mcmodel=medium
++
++
++#---------------------------------------------------------------------------
++# Parallel C:
++#
++# For IS and DC, which are in C, the following must be defined:
++#
++# CC         - C compiler 
++# CFLAGS     - C compilation arguments
++# C_INC      - any -I arguments required for compiling C 
++# CLINK      - C linker
++# CLINKFLAGS - C linker flags
++# C_LIB      - any -L and -l arguments required for linking C 
++#
++# compilations are done with $(CC) $(C_INC) $(CFLAGS) or
++#                            $(CC) $(CFLAGS)
++# linking is done with       $(CLINK) $(C_LIB) $(CLINKFLAGS)
++#---------------------------------------------------------------------------
++
++#---------------------------------------------------------------------------
++# This is the C compiler used for C programs
++#---------------------------------------------------------------------------
++CC = gcc
++
++#---------------------------------------------------------------------------
++# This links C programs; usually the same as ${CC}
++#---------------------------------------------------------------------------
++CLINK	= $(CC)
++
++#---------------------------------------------------------------------------
++# These macros are passed to the linker 
++#---------------------------------------------------------------------------
++C_LIB  = -lm
++
++#---------------------------------------------------------------------------
++# These macros are passed to the compiler 
++#---------------------------------------------------------------------------
++C_INC =
++
++#---------------------------------------------------------------------------
++# Global *compile time* flags for C programs
++# DC inspects the following flags (preceded by "-D"):
++#
++# IN_CORE - computes all views and checksums in main memory (if there is 
++# enough memory)
++#
++# VIEW_FILE_OUTPUT - forces DC to write the generated views to disk
++#
++# OPTIMIZATION - turns on some nonstandard DC optimizations
++#
++# _FILE_OFFSET_BITS=64 
++# _LARGEFILE64_SOURCE - are standard compiler flags which allow to work with 
++# files larger than 2GB.
++#---------------------------------------------------------------------------
++CFLAGS	= -O3 -mcmodel=medium
++
++#---------------------------------------------------------------------------
++# Global *link time* flags. Flags for increasing maximum executable 
++# size usually go here. 
++#---------------------------------------------------------------------------
++CLINKFLAGS = -O3 -mcmodel=medium
++
++
++#---------------------------------------------------------------------------
++# Utilities C:
++#
++# This is the C compiler used to compile C utilities.  Flags required by 
++# this compiler go here also; typically there are few flags required; hence 
++# there are no separate macros provided for such flags.
++#---------------------------------------------------------------------------
++UCC	= gcc
++
++
++#---------------------------------------------------------------------------
++# Destination of executables, relative to subdirs of the main directory. . 
++#---------------------------------------------------------------------------
++BINDIR	= ../bin
++
++
++#---------------------------------------------------------------------------
++# The variable RAND controls which random number generator 
++# is used. It is described in detail in README.install. 
++# Use "randi8" unless there is a reason to use another one. 
++# Other allowed values are "randi8_safe", "randdp" and "randdpvec"
++#---------------------------------------------------------------------------
++# RAND   = randi8
++# The following is highly reliable but may be slow:
++RAND   = randdp
++
++
++#---------------------------------------------------------------------------
++# The variable WTIME is the name of the wtime source code module in the
++# common directory.  
++# For most machines,       use wtime.c
++# For SGI power challenge: use wtime_sgi64.c
++#---------------------------------------------------------------------------
++WTIME  = wtime.c
++
++
++#---------------------------------------------------------------------------
++# Enable if either Cray or IBM: 
++# (no such flag for most machines: see common/wtime.h)
++# This is used by the C compiler to pass the machine name to common/wtime.h,
++# where the C/Fortran binding interface format is determined
++#---------------------------------------------------------------------------
++# MACHINE	=	-DCRAY
++# MACHINE	=	-DIBM
++
++
+diff -ruN NPB3.3.1/NPB3.3-SER/config/suite.def NPB3.3.1-gem5/NPB3.3-SER/config/suite.def
+--- NPB3.3.1/NPB3.3-SER/config/suite.def	1969-12-31 18:00:00.000000000 -0600
++++ NPB3.3.1-gem5/NPB3.3-SER/config/suite.def	2018-03-07 14:38:36.282127118 -0600
+@@ -0,0 +1,22 @@
++# config/suite.def
++# This file is used to build several benchmarks with a single command. 
++# Typing "make suite" in the main directory will build all the benchmarks
++# specified in this file. 
++# Each line of this file contains a benchmark name, class.
++# The name is one of "cg", "is", "dc", "ep", mg", "ft", "sp",
++#  "bt", "lu", and "ua". 
++# The class is one of "S", "W", "A", "B", and "C"
++# (classes D and E are defined for a number of benchmarks, but they
++#  are likely not practical to run in serial. See README.install).
++# No blank lines. 
++# The following example builds serial sample sizes of all benchmarks. 
++ft	A
++mg	A
++sp	A
++lu	A
++bt	A
++is	A
++ep	A
++cg	A
++ua	A
++dc      A
+diff -ruN NPB3.3.1/NPB3.3-SER/DC/dc.c NPB3.3.1-gem5/NPB3.3-SER/DC/dc.c
+--- NPB3.3.1/NPB3.3-SER/DC/dc.c	2007-05-15 11:32:52.000000000 -0500
++++ NPB3.3.1-gem5/NPB3.3-SER/DC/dc.c	2018-03-08 14:29:55.819288630 -0600
+@@ -204,9 +204,17 @@
+    }
+    timer_clear(itsk);
+    timer_start(itsk);
++   
++   //gem5 checkpoint and resetstats
++   system("m5 checkpoint");
++   system("m5 resetstats");
++
+    if( ComputeGivenGroupbys(adccntlp) ) {
+       PutErrMsg("DC.ComputeGivenGroupbys failed");
+    }
++   // gem5 dumpstats
++   system("m5 dumpstats");
++
+    timer_stop(itsk);
+    pvstp->tm_max = timer_read(itsk);
+    pvstp->verificationFailed += adccntlp->verificationFailed;
+diff -ruN NPB3.3.1/NPB3.3-SER/EP/ep.f NPB3.3.1-gem5/NPB3.3-SER/EP/ep.f
+--- NPB3.3.1/NPB3.3-SER/EP/ep.f	2007-09-05 19:39:39.000000000 -0500
++++ NPB3.3.1-gem5/NPB3.3-SER/EP/ep.f	2018-03-08 14:39:45.239513211 -0600
+@@ -130,6 +130,12 @@
+       call timer_clear(3)
+       call timer_start(1)
+ 
++c---------------------------------------------------------------------
++c      take checkpoint and reset stats here
++c---------------------------------------------------------------------
++      CALL execute_command_line('m5 checkpoint')
++      CALL execute_command_line('m5 resetstats')
++      
+       t1 = a
+       call vranlc(0, t1, a, x)
+ 
+@@ -209,6 +215,11 @@
+         gc = gc + q(i)
+  160  continue
+ 
++c---------------------------------------------------------------------
++c      dump stats here
++c---------------------------------------------------------------------
++      CALL execute_command_line('m5 dumpstats')
++
+       call timer_stop(1)
+       tm  = timer_read(1)
+ 
+diff -ruN NPB3.3.1/NPB3.3-SER/FT/appft.f NPB3.3.1-gem5/NPB3.3-SER/FT/appft.f
+--- NPB3.3.1/NPB3.3-SER/FT/appft.f	2006-07-17 14:32:00.000000000 -0500
++++ NPB3.3.1-gem5/NPB3.3-SER/FT/appft.f	2018-03-08 15:13:55.669426304 -0600
+@@ -32,6 +32,12 @@
+ 
+          call timer_start(1)
+          if (timers_enabled) call timer_start(13)
++
++c---------------------------------------------------------------------
++c      take checkpoint and reset stats here
++c---------------------------------------------------------------------
++         CALL execute_command_line('m5 checkpoint')
++         CALL execute_command_line('m5 resetstats')
+          
+          n12 = nx/2
+          n22 = ny/2
+@@ -69,6 +75,11 @@
+            call CalculateChecksum(sums(kt),kt,xnt,nx,ny,nz)           
+            if (timers_enabled) call timer_stop(10)      
+          end do
++
++c---------------------------------------------------------------------
++c      dump stats here
++c---------------------------------------------------------------------
++         CALL execute_command_line('m5 dumpstats')
+ !
+ ! Verification test.
+ !
+diff -ruN NPB3.3.1/NPB3.3-SER/IS/is.c NPB3.3.1-gem5/NPB3.3-SER/IS/is.c
+--- NPB3.3.1/NPB3.3-SER/IS/is.c	2007-04-20 19:05:31.000000000 -0500
++++ NPB3.3.1-gem5/NPB3.3-SER/IS/is.c	2018-03-08 14:33:03.006287324 -0600
+@@ -727,6 +727,9 @@
+ /*  Start timer  */             
+     timer_start( 0 );
+ 
++    //gem5 checkpoint and resetstats
++    system("m5 checkpoint");
++    system("m5 resetstats");
+ 
+ /*  This is the main iteration */
+     for( iteration=1; iteration<=MAX_ITERATIONS; iteration++ )
+@@ -734,7 +737,8 @@
+         if( CLASS != 'S' ) printf( "        %d\n", iteration );
+         rank( iteration );
+     }
+-
++    // gem5 dumpstats
++    system("m5 dumpstats");
+ 
+ /*  End of timing, obtain maximum time of all processors */
+     timer_stop( 0 );
+diff -ruN NPB3.3.1/NPB3.3-SER/LU/lu.f NPB3.3.1-gem5/NPB3.3-SER/LU/lu.f
+--- NPB3.3.1/NPB3.3-SER/LU/lu.f	2010-04-08 14:15:08.000000000 -0500
++++ NPB3.3.1-gem5/NPB3.3-SER/LU/lu.f	2018-03-08 14:48:48.892921715 -0600
+@@ -132,6 +132,12 @@
+       call setiv()
+ 
+ c---------------------------------------------------------------------
++c      take checkpoint and reset stats here
++c---------------------------------------------------------------------
++      CALL execute_command_line('m5 checkpoint')
++      CALL execute_command_line('m5 resetstats')
++
++c---------------------------------------------------------------------
+ c   perform the SSOR iterations
+ c---------------------------------------------------------------------
+       call ssor(itmax)
+@@ -147,6 +153,11 @@
+       call pintgr()
+ 
+ c---------------------------------------------------------------------
++c      dump stats here
++c---------------------------------------------------------------------
++      CALL execute_command_line('m5 dumpstats')
++
++c---------------------------------------------------------------------
+ c   verification test
+ c---------------------------------------------------------------------
+       call verify ( rsdnm, errnm, frc, class, verified )
+diff -ruN NPB3.3.1/NPB3.3-SER/MG/mg.f NPB3.3.1-gem5/NPB3.3-SER/MG/mg.f
+--- NPB3.3.1/NPB3.3-SER/MG/mg.f	2010-04-08 14:26:59.000000000 -0500
++++ NPB3.3.1-gem5/NPB3.3-SER/MG/mg.f	2018-03-08 14:50:24.018366869 -0600
+@@ -238,6 +238,12 @@
+ 
+       call timer_start(T_bench)
+ 
++c---------------------------------------------------------------------
++c      take checkpoint and reset stats here
++c---------------------------------------------------------------------
++      CALL execute_command_line('m5 checkpoint')
++      CALL execute_command_line('m5 resetstats')
++
+       if (timeron) call timer_start(T_resid2)
+       call resid(u,v,r,n1,n2,n3,a,k)
+       if (timeron) call timer_stop(T_resid2)
+@@ -261,6 +267,11 @@
+ 
+       call norm2u3(r,n1,n2,n3,rnm2,rnmu,nx(lt),ny(lt),nz(lt))
+ 
++c---------------------------------------------------------------------
++c      dump stats here
++c---------------------------------------------------------------------
++      CALL execute_command_line('m5 dumpstats')
++
+       call timer_stop(T_bench)
+ 
+       t = timer_read(T_bench)
+diff -ruN NPB3.3.1/NPB3.3-SER/SP/sp.f NPB3.3.1-gem5/NPB3.3-SER/SP/sp.f
+--- NPB3.3.1/NPB3.3-SER/SP/sp.f	2010-04-08 14:13:38.000000000 -0500
++++ NPB3.3.1-gem5/NPB3.3-SER/SP/sp.f	2018-03-08 14:55:59.797694600 -0600
+@@ -145,6 +145,12 @@
+        end do
+        call timer_start(1)
+ 
++c---------------------------------------------------------------------
++c      take checkpoint and reset stats here
++c---------------------------------------------------------------------
++       CALL execute_command_line('m5 checkpoint')
++       CALL execute_command_line('m5 resetstats')
++
+        do  step = 1, niter
+ 
+           if (mod(step, 20) .eq. 0 .or. step .eq. 1) then
+@@ -156,6 +162,11 @@
+ 
+        end do
+ 
++c---------------------------------------------------------------------
++c      dump stats here
++c---------------------------------------------------------------------
++       CALL execute_command_line('m5 dumpstats')
++
+        call timer_stop(1)
+        tmax = timer_read(1)
+        
+diff -ruN NPB3.3.1/NPB3.3-SER/UA/ua.f NPB3.3.1-gem5/NPB3.3-SER/UA/ua.f
+--- NPB3.3.1/NPB3.3-SER/UA/ua.f	2010-04-06 19:14:45.000000000 -0500
++++ NPB3.3.1-gem5/NPB3.3-SER/UA/ua.f	2018-03-08 15:02:43.079189812 -0600
+@@ -159,6 +159,12 @@
+           call timer_start(1)          
+         endif
+ 
++c---------------------------------------------------------------------
++c      take checkpoint and reset stats here
++c---------------------------------------------------------------------
++        CALL execute_command_line('m5 checkpoint')
++        CALL execute_command_line('m5 resetstats')
++
+ c.......advance the convection step 
+         call convect(ifmortar)
+ 
+@@ -219,6 +225,11 @@
+         nelt_tot = nelt_tot + dble(nelt)
+       end do
+ 
++c---------------------------------------------------------------------
++c      dump stats here
++c---------------------------------------------------------------------
++      CALL execute_command_line('m5 dumpstats')
++
+       call timer_stop(1)
+       tmax = timer_read(1)
+        
