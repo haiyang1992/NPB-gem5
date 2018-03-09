@@ -13,7 +13,8 @@ cd gem5-guest-tools/
 sudo ./install
 cd /root
 
-apt-get install make gcc g++ gfortran
+apt-get update
+apt-get -y install make gcc g++ gfortran
 
 if [ ! -f NPB3.3.1.tar.gz ]; then
       wget https://www.nas.nasa.gov/assets/npb/NPB3.3.1.tar.gz
