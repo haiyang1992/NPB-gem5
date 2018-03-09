@@ -1,4 +1,5 @@
 #!/bin/bash
+CWD=$(pwd)
 
 cd /root
 
@@ -21,7 +22,7 @@ if [ ! -f NPB3.3.1.tar.gz ]; then
 fi
 tar xvzf NPB3.3.1.tar.gz
 
-mv NPB-gem5/NPB-SER-gem5.patch /root/
+mv ${CWD}/NPB-SER-gem5.patch /root/
 patch -s -p0 < NPB-SER-gem5.patch
 
 cd NPB3.3.1/NPB3.3-SER
