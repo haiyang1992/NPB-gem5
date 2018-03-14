@@ -10,6 +10,8 @@ if [ ! -f gem5-guest-tools-x86.tgz ]; then
     wget http://cs.wisc.edu/~powerjg/files/gem5-guest-tools-x86.tgz
 fi
 tar xzvf gem5-guest-tools-x86.tgz
+mv ${CWD}/gem5-guest-tools.patch /root/
+patch -s -p0 < gem5-guest-tools.patch
 cd gem5-guest-tools/
 sudo ./install
 cd /root
