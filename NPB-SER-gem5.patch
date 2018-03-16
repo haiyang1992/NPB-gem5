@@ -56,7 +56,7 @@ diff -ruN NPB3.3.1/NPB3.3-SER/CG/cg.f NPB3.3.1-gem5/NPB3.3-SER/CG/cg.f
  c---------------------------------------------------------------------
 diff -ruN NPB3.3.1/NPB3.3-SER/config/make.def NPB3.3.1-gem5/NPB3.3-SER/config/make.def
 --- NPB3.3.1/NPB3.3-SER/config/make.def	1969-12-31 18:00:00.000000000 -0600
-+++ NPB3.3.1-gem5/NPB3.3-SER/config/make.def	2018-03-07 14:28:49.147868205 -0600
++++ NPB3.3.1-gem5/NPB3.3-SER/config/make.def	2018-03-16 14:57:54.928056350 -0500
 @@ -0,0 +1,167 @@
 +#---------------------------------------------------------------------------
 +#
@@ -227,7 +227,7 @@ diff -ruN NPB3.3.1/NPB3.3-SER/config/make.def NPB3.3.1-gem5/NPB3.3-SER/config/ma
 +
 diff -ruN NPB3.3.1/NPB3.3-SER/config/suite.def NPB3.3.1-gem5/NPB3.3-SER/config/suite.def
 --- NPB3.3.1/NPB3.3-SER/config/suite.def	1969-12-31 18:00:00.000000000 -0600
-+++ NPB3.3.1-gem5/NPB3.3-SER/config/suite.def	2018-03-07 14:38:36.282127118 -0600
++++ NPB3.3.1-gem5/NPB3.3-SER/config/suite.def	2018-03-16 14:46:09.483255265 -0500
 @@ -0,0 +1,22 @@
 +# config/suite.def
 +# This file is used to build several benchmarks with a single command. 
@@ -302,7 +302,7 @@ diff -ruN NPB3.3.1/NPB3.3-SER/EP/ep.f NPB3.3.1-gem5/NPB3.3-SER/EP/ep.f
  
 diff -ruN NPB3.3.1/NPB3.3-SER/FT/appft.f NPB3.3.1-gem5/NPB3.3-SER/FT/appft.f
 --- NPB3.3.1/NPB3.3-SER/FT/appft.f	2006-07-17 14:32:00.000000000 -0500
-+++ NPB3.3.1-gem5/NPB3.3-SER/FT/appft.f	2018-03-08 15:13:55.669426304 -0600
++++ NPB3.3.1-gem5/NPB3.3-SER/FT/appft.f	2018-03-16 14:57:37.848521145 -0500
 @@ -32,6 +32,12 @@
  
           call timer_start(1)
@@ -437,21 +437,20 @@ diff -ruN NPB3.3.1/NPB3.3-SER/SP/sp.f NPB3.3.1-gem5/NPB3.3-SER/SP/sp.f
         
 diff -ruN NPB3.3.1/NPB3.3-SER/UA/ua.f NPB3.3.1-gem5/NPB3.3-SER/UA/ua.f
 --- NPB3.3.1/NPB3.3-SER/UA/ua.f	2010-04-06 19:14:45.000000000 -0500
-+++ NPB3.3.1-gem5/NPB3.3-SER/UA/ua.f	2018-03-08 15:02:43.079189812 -0600
-@@ -159,6 +159,12 @@
-           call timer_start(1)          
-         endif
++++ NPB3.3.1-gem5/NPB3.3-SER/UA/ua.f	2018-03-16 14:58:26.255203833 -0500
+@@ -146,6 +146,11 @@
+       call timer_clear(1)
  
+       time = 0.d0
 +c---------------------------------------------------------------------
 +c      take checkpoint and reset stats here
 +c---------------------------------------------------------------------
-+        CALL execute_command_line('m5 checkpoint')
-+        CALL execute_command_line('m5 resetstats')
-+
- c.......advance the convection step 
-         call convect(ifmortar)
++      CALL execute_command_line('m5 checkpoint')
++      CALL execute_command_line('m5 resetstats')
+       do step= 0, niter
  
-@@ -219,6 +225,11 @@
+         if (step .eq. 1) then
+@@ -219,6 +224,11 @@
          nelt_tot = nelt_tot + dble(nelt)
        end do
  
